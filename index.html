@@ -25,33 +25,33 @@
     <!-- live, bumpable Claim Funds hexagons -->
     <g class="hex" data-i="0">
       <polygon points="981.5,310.2 948,368.2 881,368.2 847.5,310.2 881,252.2 948,252.2" fill="#FD9352"></polygon>
-      <text x="914.5" y="307" text-anchor="middle" fill="#FFFFFF" font-size="16" font-weight="600">Claim</text>
-      <text x="914.5" y="325" text-anchor="middle" fill="#FFFFFF" font-size="16" font-weight="600">Funds</text>
+      <text x="914.5" y="304.2" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="500">Claim Funds</text>
+      <text x="914.5" y="326.2" text-anchor="middle" fill="#FFFFFF" font-size="15" font-weight="700">Policy 1</text>
     </g>
     <g class="hex" data-i="1">
       <polygon points="871.8,373.5 838.3,431.5 771.3,431.5 737.8,373.5 771.3,315.5 838.3,315.5" fill="#FD9352"></polygon>
-      <text x="804.8" y="370.5" text-anchor="middle" fill="#FFFFFF" font-size="16" font-weight="600">Claim</text>
-      <text x="804.8" y="388.5" text-anchor="middle" fill="#FFFFFF" font-size="16" font-weight="600">Funds</text>
+      <text x="804.8" y="367.5" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="500">Claim Funds</text>
+      <text x="804.8" y="389.5" text-anchor="middle" fill="#FFFFFF" font-size="15" font-weight="700">Policy 2</text>
     </g>
     <g class="hex" data-i="2">
       <polygon points="1094,376.8 1060.5,434.8 993.5,434.8 960,376.8 993.5,318.8 1060.5,318.8" fill="#FD9352"></polygon>
-      <text x="1027" y="373.8" text-anchor="middle" fill="#FFFFFF" font-size="16" font-weight="600">Claim</text>
-      <text x="1027" y="391.8" text-anchor="middle" fill="#FFFFFF" font-size="16" font-weight="600">Funds</text>
+      <text x="1027" y="370.8" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="500">Claim Funds</text>
+      <text x="1027" y="392.8" text-anchor="middle" fill="#FFFFFF" font-size="15" font-weight="700">Policy 3</text>
     </g>
     <g class="hex" data-i="3">
       <polygon points="981.5,439.5 948,497.5 881,497.5 847.5,439.5 881,381.5 948,381.5" fill="#FD9352"></polygon>
-      <text x="914.5" y="436.5" text-anchor="middle" fill="#FFFFFF" font-size="16" font-weight="600">Claim</text>
-      <text x="914.5" y="454.5" text-anchor="middle" fill="#FFFFFF" font-size="16" font-weight="600">Funds</text>
+      <text x="914.5" y="433.5" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="500">Claim Funds</text>
+      <text x="914.5" y="455.5" text-anchor="middle" fill="#FFFFFF" font-size="15" font-weight="700">Policy 4</text>
     </g>
     <g class="hex" data-i="4">
       <polygon points="870.1,497.6 836.6,555.6 769.6,555.6 736.1,497.6 769.6,439.6 836.6,439.6" fill="#FD9352"></polygon>
-      <text x="803.1" y="494.6" text-anchor="middle" fill="#FFFFFF" font-size="16" font-weight="600">Claim</text>
-      <text x="803.1" y="512.6" text-anchor="middle" fill="#FFFFFF" font-size="16" font-weight="600">Funds</text>
+      <text x="803.1" y="491.6" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="500">Claim Funds</text>
+      <text x="803.1" y="513.6" text-anchor="middle" fill="#FFFFFF" font-size="15" font-weight="700">Policy 5</text>
     </g>
     <g class="hex" data-i="5">
       <polygon points="1092.7,505.6 1059.2,563.6 992.2,563.6 958.7,505.6 992.2,447.6 1059.2,447.6" fill="#FD9352"></polygon>
-      <text x="1025.7" y="502.6" text-anchor="middle" fill="#FFFFFF" font-size="16" font-weight="600">Claim</text>
-      <text x="1025.7" y="520.6" text-anchor="middle" fill="#FFFFFF" font-size="16" font-weight="600">Funds</text>
+      <text x="1025.7" y="499.6" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="500">Claim Funds</text>
+      <text x="1025.7" y="521.6" text-anchor="middle" fill="#FFFFFF" font-size="15" font-weight="700">Policy 6</text>
     </g>
 
     <g id="overlay"></g>
@@ -72,12 +72,23 @@
   }
 
   // ---- config ----
-  var DUR = 20;
+  var SLOT = 5;                       // seconds per event
+  var PATTERN = ["F","P","P"];         // 1 funding for every 2 payments
+  var DUR = SLOT * PATTERN.length;     // 15s loop
   var HEX = [ [914.5,310.2], [804.8,373.5], [1027.0,376.8], [914.5,439.5], [803.1,497.6], [1025.7,505.6] ];
-  var PAY_SEQ = [2,5,1,4,0,3];
-  var FUND_SEQ = [4,0,5,1,3,2];
-  var FUND_COUNTS = [2,1,3,1,3,2];
   var fundColor = "#B029FF", payColor = "#F15B40", billColor = "#FD9352";
+
+  // deterministic per-slot randomness: stable within a slot, non-repeating across slots
+  function rnd(seed){ var x = Math.sin(seed*127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
+  function pickHexes(seed, count){
+    var pool=[0,1,2,3,4,5], out=[], k, idx;
+    for (k=0;k<count && pool.length;k++){
+      idx = Math.floor(rnd(seed + k*16.7) * pool.length);
+      if (idx >= pool.length) idx = pool.length-1;
+      out.push(pool.splice(idx,1)[0]);
+    }
+    return out;
+  }
   var PAID_URI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIYAAAA3CAMAAAD+McJzAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAFxUExURQAAAACwUQCwUACwUACwUACxUQCvUACxUQC/YACvUACvUACxUQC1VQCxUACvUACxUQCvUACvUACxUQCwUACvUACwUAayVDPAczK/cvX8+P///9716BG1XIjarbbozbLnygCxUQSxUzzDeWbQljrCeH/Xp/v+/E3Ihcnu2vf9+h65ZQCxUavlxVTKirjpzlDJhwCyUUTFfy2+bxq4YpjfuK7mxy+/cMPs1tTy4Z3hvB25ZJvguqzlxl3NkNDw39fz5EDEfK/myNv05r3r0gCwUCC6Zp7hvKrlxSy+bqLivyO7aKHivqjkwyq9bQuzWOr48afkw+L265ffuAy0WHnVo2LOk2vRmXLTnvP792nRmO3589Lx4E/Ihi6+cOb37gCvUPb8+cvv20jGgTG/cqDiviG6ZwCzU3DTnef47yS7aRi3YI/csjC/cQCwUAiyVYzbsBy5Y5XetpnfuUfGgT/Ee8ju2YDYqCi8awCxUQCxUQCxUWtfRIEAAAB7dFJOUwB4z//flxDHCEBw5xiPMLdQYPefIK//////////////WP////////////9o/////4f/////////////////////////v///////////////////////////////////gP///////yj////////v/////////////9dIpwsazsMAAAAJcEhZcwAAFxEAABcRAcom8z8AAANXSURBVFhH7Zj5VxMxEMdXwt1SsMLajqAshZWjAha1IMjpBSqgRfG+xfs+8a/3JdnNJpOk1ge7PN/j80t3v5nXfNudSSbrOAoH6kgi1Dc0qhMrNODw+GhqxpMLWnBsnLTi2QUJPRFOKo2nD2jFkfHShufnpFM4MGYy2AGjDYfFTTt2QMngqPjpwB4cx2nCQfFTrxftQRyTBFrRNiedn4wsLtrE85NzSHXRmcUBCaEWbRce3iHuYaxYqJNd7PZmksvDkW5ZcHuOHlMEQa9ko5bNxOuLrt0Cp18OkBgA8I/LgjsIQ8OyIEhFRTuCxwx4Rf+EuMnlgeOPGn/jGOB/w2qDjIcuGmsoVq8I4J8M74QNPF1IqaDKVWyIoq2hWCdOAcDpM+FtLg9l+lmaBJhSAi1UsUG6uIsaNpOz0wAwUxL3oY0oF8/NAsDcvLuwODdMSG52cZRHUt1fmq9mg7QwG+exrHHhIgBcuhwJwkbw9e5y8IiW+X04jnUzrGg7sKqxcgUArl6TFGFjdY19/ToAXL/RM0lnlG1g3cKIeTPx1qOiIKRSBoByRVIiG7wkxgD8DXp7M6/Y0HQLqUZT5+cVYShaJAwuWEoUCoVbCwCwyX50kKgDig1Nt9FmWsb7fIDboQ+TC7lgp8SToQSX3Iau28gaF9A7dwHu3WeXD2Zogq2ggNDGw6V5Pke4egQpK2wg3YrzCCuUzccAT54SQp7Rv/35CzwucoOhT/evNtqdLSwxXgLAq9fkzRwAFD08qtvY2UPJZmwHxrd0NXpncYFs0FTc5FdjOEVV3QI9saTfY5Xy4WOQgtOf8JBugxYm21BLa1rBKrqZFDtWG0qWENL9mbn4MoEHKMiGO0hX7K/femjmSjY03cwI31RMxUKIR7PT9ER0G2SVrZMA8H1StiHpVVI0bMAsvVelbHOh2SAu+8H+hlIpum5EtKOGJYxS+WFxYeRnv7HzsOohUXOe3qu+HB1VjGtYMsgHt+Z6PJoUv5Rj7N+bjpjYll04TjseT4agDxVk9iRLs53IRi3t+e4jzigCUzMYN9KJTdCLg+JHPr8KEs/SJuyAsZV0lppfSDrjOC5eLK9nE15LrS+rnW0cGifaW8CI3zg2PpS3TQhzXxoL/Bi/zz7/CX8A3Jm+f+MzyIcAAAAASUVORK5CYII=";
 
   // ---- math helpers ----
@@ -140,40 +151,43 @@
   // ---- per-frame composition ----
   function compute(t, loops){
     var els = [], bumps = ["","","","","",""], i;
-    var payCycle = Math.floor(t/5);
-    var payTarget = PAY_SEQ[(payCycle+loops)%6];
-    var _rot = loops%6;
-    var fundCount = FUND_COUNTS[_rot];
-    var fundTargets = FUND_SEQ.slice(_rot).concat(FUND_SEQ.slice(0,_rot)).slice(0,fundCount);
-    var TPA = [1477,437];
+    var slotInLoop = Math.floor(t / SLOT); if (slotInLoop >= PATTERN.length) slotInLoop = PATTERN.length-1;
+    var globalSlot = loops * PATTERN.length + slotInLoop;  // ever-increasing → fresh randomness each slot
+    var lt = t - slotInLoop * SLOT;                        // local time within the slot (0..5)
+    var kind = PATTERN[slotInLoop];
 
-    // FUNDING notes Carriers -> CDA (vanish at CDA)
-    if (t >= 0.2 && t <= 3.25){
-      var fb = (t-0.2)/3.0, wF = [[205,462],[205,782],[727,782]];
-      for (i=0;i<5;i++){ var pr=fb-i*0.05; if (pr>0&&pr<1){ var c=along(wF,ease(pr)); els.push(bill(c[0],c[1], i%2?6:-5)); } }
+    if (kind === "F"){
+      // pick 1..3 random hexagons to fund this slot
+      var fundCount = 1 + Math.floor(rnd(globalSlot*3.137) * 3); if (fundCount > 3) fundCount = 3;
+      var fundTargets = pickHexes(globalSlot*8.91, fundCount);
+
+      // FUNDING notes Carriers -> CDA (vanish at CDA)
+      if (lt >= 0.2 && lt <= 3.25){
+        var fb = (lt-0.2)/3.0, wF = [[205,462],[205,782],[727,782]];
+        for (i=0;i<5;i++){ var pr=fb-i*0.05; if (pr>0&&pr<1){ var c=along(wF,ease(pr)); els.push(bill(c[0],c[1], i%2?6:-5)); } }
+      }
+      // FUNDING signals CDA -> random hexagons simultaneously
+      if (lt >= 3.3 && lt <= 4.4){
+        var eF = ease((lt-3.3)/1.1);
+        fundTargets.forEach(function(tg){ var c=along([[734,696],[734,624],[745,619],[758,615],HEX[tg]], eF); els.push(pulse(c[0],c[1],fundColor,1+0.10*Math.sin(t*14))); });
+      }
+      // arrival Credit signs, vibrate with the account then fade
+      if (lt >= 4.25 && lt <= 4.98){ var opF=cl((lt-4.25)/0.15,0,1); if (lt>4.7) opF*=cl((4.98-lt)/0.28,0,1); var uF=(lt>=4.25&&lt<=4.67)?(lt-4.25)/0.42:-1; fundTargets.forEach(function(tg){ els.push(sign(HEX[tg][0],HEX[tg][1],"+",fundColor,opF,uF)); }); }
+      if (lt >= 4.25 && lt <= 4.67){ var uB=(lt-4.25)/0.42; fundTargets.forEach(function(tg){ bumps[tg]=bumpTransform(HEX[tg][0],HEX[tg][1],uB); }); }
+    } else {
+      // PAYMENT slot: 1 random hexagon debited
+      var payTarget = Math.floor(rnd(globalSlot*5.701) * 6); if (payTarget > 5) payTarget = 5;
+      var tp = lt, TPA = [1477,437];
+      if (tp >= 0.1 && tp <= 0.9){ var c1=along([TPA,[1180,437],HEX[payTarget]], ease((tp-0.1)/0.8)); els.push(pulse(c1[0],c1[1],payColor,1+0.10*Math.sin(t*16))); }
+      if (tp >= 1.25 && tp <= 2.0){ var c2=along([HEX[payTarget],[1080,615],[1093,620],[1093,624],[1093,696]], ease((tp-1.25)/0.75)); els.push(pulse(c2[0],c2[1],payColor,1+0.10*Math.sin(t*16))); }
+      if (tp > 2.0 && tp < 2.45){ els.push(pulse(1093,696,payColor,1.06+0.12*Math.sin(tp*22))); }
+      if (tp >= 2.45 && tp <= 3.1){ var c3=along([[1087,697],[927,697],[855,753],[729,753]], ease((tp-2.45)/0.65)); els.push(pulse(c3[0],c3[1],payColor,1+0.10*Math.sin(t*16))); }
+      if (tp >= 3.15 && tp <= 4.5){ var pb=(tp-3.15)/1.35, wP=[[727,782],[1703,782]]; for (i=0;i<4;i++){ var prp=pb-i*0.05; if (prp>0&&prp<1){ var cp=along(wP,ease(prp)); els.push(bill(cp[0],cp[1], i%2?5:-4)); } } }
+      if (tp >= 4.3 && tp <= 4.95){ var opP=cl((tp-4.3)/0.18,0,1); if (tp>4.7) opP*=cl((4.95-tp)/0.25,0,1); var scP=0.8+0.2*easeOutBack(cl((tp-4.3)/0.3,0,1)); els.push(paidPill(opP,scP)); }
+      // arrival Debit sign + bump
+      if (tp >= 0.85 && tp <= 1.7){ var opD=cl((tp-0.85)/0.15,0,1); if (tp>1.35) opD*=cl((1.7-tp)/0.35,0,1); var uD=(tp>=0.85&&tp<=1.27)?(tp-0.85)/0.42:-1; els.push(sign(HEX[payTarget][0],HEX[payTarget][1],"-",payColor,opD,uD)); }
+      if (tp >= 0.85 && tp <= 1.27){ var uBp=(tp-0.85)/0.42; bumps[payTarget]=bumpTransform(HEX[payTarget][0],HEX[payTarget][1],uBp); }
     }
-    // FUNDING signals CDA -> 1..3 random hexagons simultaneously
-    if (t >= 3.3 && t <= 4.4){
-      var eF = ease((t-3.3)/1.1);
-      fundTargets.forEach(function(tg){ var c=along([[734,696],[734,624],[745,619],[758,615],HEX[tg]], eF); els.push(pulse(c[0],c[1],fundColor,1+0.10*Math.sin(t*14))); });
-    }
-
-    // PAYMENTS (after funding)
-    var tp = t%5, payActive = t >= 5;
-    if (payActive && tp >= 0.1 && tp <= 0.9){ var c1=along([TPA,[1180,437],HEX[payTarget]], ease((tp-0.1)/0.8)); els.push(pulse(c1[0],c1[1],payColor,1+0.10*Math.sin(t*16))); }
-    if (payActive && tp >= 1.25 && tp <= 2.0){ var c2=along([HEX[payTarget],[1080,615],[1093,620],[1093,624],[1093,696]], ease((tp-1.25)/0.75)); els.push(pulse(c2[0],c2[1],payColor,1+0.10*Math.sin(t*16))); }
-    if (payActive && tp > 2.0 && tp < 2.45){ els.push(pulse(1093,696,payColor,1.06+0.12*Math.sin(tp*22))); }
-    if (payActive && tp >= 2.45 && tp <= 3.1){ var c3=along([[1087,697],[927,697],[855,753],[729,753]], ease((tp-2.45)/0.65)); els.push(pulse(c3[0],c3[1],payColor,1+0.10*Math.sin(t*16))); }
-    if (payActive && tp >= 3.15 && tp <= 4.5){ var pb=(tp-3.15)/1.35, wP=[[727,782],[1703,782]]; for (i=0;i<4;i++){ var prp=pb-i*0.05; if (prp>0&&prp<1){ var cp=along(wP,ease(prp)); els.push(bill(cp[0],cp[1], i%2?5:-4)); } } }
-    if (payActive && tp >= 4.3 && tp <= 4.95){ var opP=cl((tp-4.3)/0.18,0,1); if (tp>4.7) opP*=cl((4.95-tp)/0.25,0,1); var scP=0.8+0.2*easeOutBack(cl((tp-4.3)/0.3,0,1)); els.push(paidPill(opP,scP)); }
-
-    // arrival signs (Credit / Debit), vibrate with the account then fade
-    if (t >= 4.25 && t <= 5.05){ var opF=cl((t-4.25)/0.15,0,1); if (t>4.7) opF*=cl((5.05-t)/0.35,0,1); var uF=(t>=4.25&&t<=4.67)?(t-4.25)/0.42:-1; fundTargets.forEach(function(tg){ els.push(sign(HEX[tg][0],HEX[tg][1],"+",fundColor,opF,uF)); }); }
-    if (payActive && tp >= 0.85 && tp <= 1.7){ var opD=cl((tp-0.85)/0.15,0,1); if (tp>1.35) opD*=cl((1.7-tp)/0.35,0,1); var uD=(tp>=0.85&&tp<=1.27)?(tp-0.85)/0.42:-1; els.push(sign(HEX[payTarget][0],HEX[payTarget][1],"-",payColor,opD,uD)); }
-
-    // BUMPS
-    if (t >= 4.25 && t <= 4.67){ var uB=(t-4.25)/0.42; fundTargets.forEach(function(tg){ bumps[tg]=bumpTransform(HEX[tg][0],HEX[tg][1],uB); }); }
-    if (payActive && tp >= 0.85 && tp <= 1.27){ var uBp=(tp-0.85)/0.42; bumps[payTarget]=bumpTransform(HEX[payTarget][0],HEX[payTarget][1],uBp); }
 
     return { els: els, bumps: bumps };
   }

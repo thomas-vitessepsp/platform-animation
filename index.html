@@ -179,9 +179,7 @@
       var payTarget = Math.floor(rnd(globalSlot*5.701) * 6); if (payTarget > 5) payTarget = 5;
       var tp = lt, TPA = [1477,437];
       if (tp >= 0.1 && tp <= 0.9){ var c1=along([TPA,[1180,437],HEX[payTarget]], ease((tp-0.1)/0.8)); els.push(pulse(c1[0],c1[1],payColor,1+0.10*Math.sin(t*16))); }
-      if (tp >= 1.25 && tp <= 2.0){ var c2=along([HEX[payTarget],[1080,615],[1093,620],[1093,624],[1093,696]], ease((tp-1.25)/0.75)); els.push(pulse(c2[0],c2[1],payColor,1+0.10*Math.sin(t*16))); }
-      if (tp > 2.0 && tp < 2.45){ els.push(pulse(1093,696,payColor,1.06+0.12*Math.sin(tp*22))); }
-      if (tp >= 2.45 && tp <= 3.1){ var c3=along([[1087,697],[927,697],[855,753],[729,753]], ease((tp-2.45)/0.65)); els.push(pulse(c3[0],c3[1],payColor,1+0.10*Math.sin(t*16))); }
+      if (tp >= 1.25 && tp <= 3.1){ var c2=along([HEX[payTarget],[1080,615],[1093,620],[1093,624],[1093,696],[1087,697],[927,697],[855,753],[729,753]], ease((tp-1.25)/1.85)); els.push(pulse(c2[0],c2[1],payColor,1+0.10*Math.sin(t*16))); }
       if (tp >= 3.15 && tp <= 4.5){ var pb=(tp-3.15)/1.35, wP=[[727,782],[1703,782]]; for (i=0;i<4;i++){ var prp=pb-i*0.05; if (prp>0&&prp<1){ var cp=along(wP,ease(prp)); els.push(bill(cp[0],cp[1], i%2?5:-4)); } } }
       if (tp >= 4.3 && tp <= 4.95){ var opP=cl((tp-4.3)/0.18,0,1); if (tp>4.7) opP*=cl((4.95-tp)/0.25,0,1); var scP=0.8+0.2*easeOutBack(cl((tp-4.3)/0.3,0,1)); els.push(paidPill(opP,scP)); }
       // arrival Debit sign + bump
